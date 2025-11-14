@@ -17,10 +17,7 @@
               "browser": "."
             },
             "browser": "index.tsx",
-            "tsConfig": "tsconfig.json",
-            "externalDependencies": [
-              "@google/generative-ai"
-            ]
+            "tsConfig": "tsconfig.json"
           },
           "configurations": {
             "production": {

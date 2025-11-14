@@ -1,6 +1,5 @@
 
 import { Injectable, inject } from '@angular/core';
-import { GoogleGenAI } from '@google/genai';
 import { environment } from '../environments/environment';
 import { SettingsService } from './settings.service';
 
@@ -8,7 +7,6 @@ import { SettingsService } from './settings.service';
   providedIn: 'root',
 })
 export class GeminiService {
-  private genAI: GoogleGenAI | null = null;
   private settingsService = inject(SettingsService);
 
   constructor() {}
