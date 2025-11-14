@@ -1,0 +1,54 @@
+services:
+  # Backend API
+  - type: web
+    name: minhas-dividas-api
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd api && npm install
+    startCommand: cd api && npm start
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GEMINI_API_KEYS
+        sync: false
+    healthCheckPath: /api/health
+
+  # Frontend
+  - type: web
+    name: minhas-dividas-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 22.21.1
+
+  # Cron Job - Consulta diária
+  - type: cron
+    name: minhas-dividas-daily-query
+    runtime: node
+    region: oregon
+    plan: free
+    schedule: "0 12 * * *"
+    buildCommand: cd api && npm install
+    startCommand: node -e "require('./api/src/config/supabase'); console.log('Daily query executed')"
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
