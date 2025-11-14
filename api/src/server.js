@@ -18,6 +18,7 @@ const incomeRoutes = require('./routes/income');
 const paymentPlanRoutes = require('./routes/paymentPlan');
 const aiChatRoutes = require('./routes/aiChat');
 const settingsRoutes = require('./routes/settings');
+const dailyQueryRoutes = require('./routes/dailyQuery');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -45,6 +46,7 @@ app.use('/api/income', incomeRoutes);
 app.use('/api/payment-plans', paymentPlanRoutes);
 app.use('/api/ai-chat', aiChatRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/daily-query', dailyQueryRoutes);
 
 async function ensureStorageBucket() {
   try {
