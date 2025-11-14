@@ -1,0 +1,2 @@
+[{"id":1,"created_at":"2025-11-12T11:50:59.530709+00:00","debt_id":1,"offer_date":"12/11/2025","discount_percentage":0.01,"offer_value":1,"accepted":false,"notes":"1","original_value":1}, 
+ {"id":2,"created_at":"2025-11-12T12:14:14.251899+00:00","debt_id":4,"offer_date":"10/11/2025","discount_percentage":95,"offer_value":506.66,"accepted":false,"notes":"Via app XP","original_value":6028.18}]

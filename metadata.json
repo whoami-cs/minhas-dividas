@@ -1,0 +1,5 @@
+{
+  "name": "Gerenciador de Dívidas e Empréstimos",
+  "description": "Um painel financeiro para rastrear e gerenciar dívidas de cartão de crédito e empréstimos, fornecendo insights e resumos detalhados com base nos dados fornecidos.",
+  "requestFramePermissions": []
+}
