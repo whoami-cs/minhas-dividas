@@ -1,8 +1,0 @@
--- Adiciona as colunas que faltam na tabela negotiation_offers
-ALTER TABLE public.negotiation_offers 
-ADD COLUMN IF NOT EXISTS original_value NUMERIC NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS discount_percentage NUMERIC NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS offer_value NUMERIC NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS offer_date TEXT NOT NULL DEFAULT '',
-ADD COLUMN IF NOT EXISTS accepted BOOLEAN DEFAULT false NOT NULL,
-ADD COLUMN IF NOT EXISTS notes TEXT;
