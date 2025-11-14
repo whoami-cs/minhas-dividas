@@ -8,12 +8,10 @@ import { SettingsService } from './settings.service';
   providedIn: 'root',
 })
 export class GeminiService {
-  private genAI: GoogleGenAI;
+  private genAI: GoogleGenAI | null = null;
   private settingsService = inject(SettingsService);
 
-  constructor() {
-    this.genAI = new GoogleGenAI({ apiKey: environment.geminiApiKey });
-  }
+  constructor() {}
 
   private async getAuthHeaders(): Promise<HeadersInit> {
     const tokenService = new (await import('./token.service')).TokenService();
