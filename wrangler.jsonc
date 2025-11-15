@@ -1,8 +1,7 @@
 {
   "name": "minhas-dividas",
   "compatibility_date": "2025-11-15",
-  "main": "api/src/server.js",
-  "compatibility_flags": ["nodejs_compat"],
+  "main": "index.js",
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS"
