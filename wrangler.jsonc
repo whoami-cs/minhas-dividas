@@ -1,9 +1,10 @@
 {
   "name": "minhas-dividas",
   "compatibility_date": "2025-11-15",
-  "main": "worker/index.js",
+  "main": "api/src/server.js",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS"
   }
 }

@@ -16,30 +16,20 @@ export default {
     }
 
     try {
-      const path = url.pathname;
-      const method = request.method;
       const headers = { ...corsHeaders, 'Content-Type': 'application/json' };
-
-      if (path === '/api/health') {
-        return new Response(JSON.stringify({ status: 'ok' }), { headers });
-      }
-
-      if (path === '/api/auth/signin' && method === 'POST') {
-        const body = await request.json();
-        const res = await fetch(`${env.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-          method: 'POST',
-          headers: { 'apikey': env.SUPABASE_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        return new Response(await res.text(), { status: res.status, headers });
-      }
-
-      return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      
+      // Proxy para API Express no Render
+      const apiUrl = url.pathname.replace('/api', 'https://minhas-dividas-api.onrender.com/api');
+      const proxyRequest = new Request(apiUrl + url.search, {
+        method: request.method,
+        headers: request.headers,
+        body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined
       });
+      
+      const res = await fetch(proxyRequest);
+      return new Response(await res.text(), { status: res.status, headers: { ...headers, ...Object.fromEntries(res.headers) } });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
   }
 };
