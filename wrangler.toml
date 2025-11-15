@@ -1,0 +1,11 @@
+name = "minhasdividas"
+main = "worker/index.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+binding = "ASSETS"
+directory = "dist"
+
+[vars]
+SUPABASE_URL = "https://qxoyjkalmseronmjaiff.supabase.co"

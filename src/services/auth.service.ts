@@ -28,7 +28,7 @@ export class AuthService {
 
   async signIn(email: string, password: string) {
     try {
-      const response = await fetch(`${environment.apiUrl}/auth/signin`, {
+      const response = await fetch(`${environment.apiUrl}/api/auth/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -57,7 +57,7 @@ export class AuthService {
     try {
       const token = this.tokenService.getToken();
       if (token) {
-        await fetch(`${environment.apiUrl}/auth/signout`, {
+        await fetch(`${environment.apiUrl}/api/auth/signout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -75,7 +75,7 @@ export class AuthService {
 
   async resetPassword(email: string) {
     try {
-      const response = await fetch(`${environment.apiUrl}/auth/reset-password`, {
+      const response = await fetch(`${environment.apiUrl}/api/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
