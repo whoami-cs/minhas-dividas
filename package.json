@@ -2,7 +2,9 @@
   "name": "minhasdividas",
   "type": "module",
   "scripts": {
-    "build": "ng build"
+    "build": "ng build",
+    "dev": "ng serve",
+    "preview": "ng serve --configuration=production"
   },
   "dependencies": {
     "@angular/build": "^20.3.0",
