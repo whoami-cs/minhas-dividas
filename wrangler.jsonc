@@ -2,7 +2,7 @@
   "name": "minhas-dividas",
   "compatibility_date": "2024-09-23",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "worker-entry.js",
+  "main": "src/worker.ts",
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS"
