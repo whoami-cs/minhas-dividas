@@ -1,6 +1,5 @@
 
 import { Injectable, inject } from '@angular/core';
-import { GoogleGenAI } from '@google/genai';
 import { environment } from '../environments/environment';
 import { SettingsService } from './settings.service';
 
@@ -8,17 +7,12 @@ import { SettingsService } from './settings.service';
   providedIn: 'root',
 })
 export class GeminiService {
-  private genAI: GoogleGenAI;
   private settingsService = inject(SettingsService);
-
-  constructor() {
-    this.genAI = new GoogleGenAI({ apiKey: environment.geminiApiKey });
-  }
 
   private async getAuthHeaders(): Promise<HeadersInit> {
     const tokenService = new (await import('./token.service')).TokenService();
     const token = tokenService.getToken();
-    
+
     return {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` })

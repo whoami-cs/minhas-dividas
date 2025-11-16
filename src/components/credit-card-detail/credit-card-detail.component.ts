@@ -9,6 +9,7 @@ import { ParseDatePipe } from '../../pipes/parse-date.pipe';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
 import { NegotiationOffersComponent } from '../negotiation-offers/negotiation-offers.component';
 import { AiChatComponent } from '../ai-chat/ai-chat.component';
+import { DeleteConfirmationModalComponent } from '../delete-confirmation-modal/delete-confirmation-modal.component';
 import { marked } from 'marked';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
@@ -17,7 +18,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-credit-card-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CurrencyPipe, DatePipe, ParseDatePipe, BreadcrumbComponent, NegotiationOffersComponent, AiChatComponent],
+  imports: [CommonModule, ReactiveFormsModule, CurrencyPipe, DatePipe, ParseDatePipe, BreadcrumbComponent, NegotiationOffersComponent, AiChatComponent, DeleteConfirmationModalComponent],
   template: `
     <div class="space-y-6">
       <!-- Breadcrumb -->
@@ -238,27 +239,27 @@ Chart.register(...registerables);
       </div>
       }
 
-      <!-- Delete Confirmation Modal -->
-      @if (showDeleteConfirm()) {
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm" (click)="showDeleteConfirm.set(false)">
-          <div class="bg-white rounded-xl shadow-2xl w-full max-w-md" (click)="$event.stopPropagation()">
-            <div class="p-6">
-              <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Excluir Dívida?</h3>
-              <p class="text-gray-600 text-center mb-6">Tem certeza que deseja excluir a dívida do cartão <span class="font-semibold">{{ debt().local }}</span>? Esta ação não pode ser desfeita.</p>
-              <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p class="text-sm text-red-800 font-medium">Valor atual: {{ debt().current_value | currency:'BRL' }}</p>
-              </div>
-            </div>
-            <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-xl">
-              <button (click)="showDeleteConfirm.set(false)" class="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
-              <button (click)="delete.emit(debt().id!); showDeleteConfirm.set(false)" class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">Sim, Excluir</button>
-            </div>
-          </div>
-        </div>
-      }
+    </div>
+
+    <!-- Delete Confirmation Modals (outside space-y-6) -->
+    <app-delete-confirmation-modal
+      [isOpen]="showDeleteConfirm()"
+      [title]="'Excluir dívida?'"
+      [message]="'Tem certeza que deseja excluir a dívida do cartão ' + debt().local + '? Esta ação não pode ser desfeita.'"
+      [additionalInfo]="'Valor atual: ' + (debt().current_value | currency:'BRL')"
+      (confirmed)="delete.emit(debt().id!)"
+      (cancelled)="showDeleteConfirm.set(false)"
+    />
+
+    <app-delete-confirmation-modal
+      [isOpen]="showDeleteAttachmentConfirm()"
+      [title]="'Excluir anexo?'"
+      [message]="deletingAttachment() ? 'Tem certeza que deseja excluir o anexo ' + deletingAttachment()!.file_name + '? Esta ação será efetivada ao salvar.' : ''"
+      (confirmed)="confirmDeleteAttachment()"
+      (cancelled)="showDeleteAttachmentConfirm.set(false)"
+    />
+
+    <div class="hidden">
 
       <!-- Gráficos -->
       @if (!internalEditMode()) {
@@ -360,24 +361,7 @@ Chart.register(...registerables);
         </div>
       }
 
-      <!-- Delete Attachment Confirmation Modal -->
-      @if (showDeleteAttachmentConfirm()) {
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm" (click)="showDeleteAttachmentConfirm.set(false)">
-          <div class="bg-white rounded-xl shadow-2xl w-full max-w-md" (click)="$event.stopPropagation()">
-            <div class="p-6">
-              <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Excluir anexo?</h3>
-              <p class="text-gray-600 text-center mb-6">Tem certeza que deseja excluir o anexo <span class="font-semibold">{{ deletingAttachment()?.file_name }}</span>? Esta ação será efetivada ao salvar.</p>
-            </div>
-            <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-xl">
-              <button (click)="showDeleteAttachmentConfirm.set(false)" class="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
-              <button (click)="confirmDeleteAttachment()" class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">Sim, excluir</button>
-            </div>
-          </div>
-        </div>
-      }
+
 
       <!-- Ofertas de Renegociação -->
       @if (!internalEditMode() && debt()?.id) {

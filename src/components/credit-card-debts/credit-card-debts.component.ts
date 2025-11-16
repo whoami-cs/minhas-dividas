@@ -8,12 +8,14 @@ import { CreditCardDebt } from '../../models/debt.model';
 import { ParseDatePipe } from '../../pipes/parse-date.pipe';
 import { CreditCardDetailComponent } from '../credit-card-detail/credit-card-detail.component';
 import { AiChatComponent } from '../ai-chat/ai-chat.component';
+import { DeleteConfirmationModalComponent } from '../delete-confirmation-modal/delete-confirmation-modal.component';
+import { ToastMessageComponent, ToastMessage } from '../toast-message/toast-message.component';
 import { marked } from 'marked';
 
 @Component({
   selector: 'app-credit-card-debts',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, CurrencyPipe, DatePipe, ParseDatePipe, CreditCardDetailComponent, AiChatComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CurrencyPipe, DatePipe, ParseDatePipe, CreditCardDetailComponent, AiChatComponent, DeleteConfirmationModalComponent, ToastMessageComponent],
   template: `
     @if (selectedDebt() || isAddingNew()) {
       <app-credit-card-detail 
@@ -55,36 +57,10 @@ import { marked } from 'marked';
       </div>
 
       <!-- Message Box -->
-      @if (message()) {
-        <div class="fixed bottom-8 right-8 z-50 max-w-sm">
-          <div
-            [ngClass]="{
-              'bg-red-100 border-red-500 text-red-700': message()?.type === 'error',
-              'bg-green-100 border-green-500 text-green-700': message()?.type === 'success'
-            }"
-            class="border-l-4 p-4 rounded-lg shadow-lg"
-            role="alert">
-            <div class="flex">
-              <div class="py-1">
-                <svg [ngClass]="{'text-red-500': message()?.type === 'error', 'text-green-500': message()?.type === 'success'}" class="h-6 w-6 mr-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <div class="flex-grow">
-                <p class="font-bold">{{ message()?.type === 'error' ? 'Erro' : 'Sucesso' }}</p>
-                <p class="text-sm">{{ message()?.text }}</p>
-                @if (message()?.details) {
-                  <button (click)="showErrorDetails.set(!showErrorDetails())" class="text-xs text-gray-600 hover:underline mt-2">
-                    {{ showErrorDetails() ? 'Ocultar' : 'Ver' }} detalhes
-                  </button>
-                  @if (showErrorDetails()) {
-                    <pre class="mt-2 text-xs bg-gray-100 p-2 rounded overflow-x-auto whitespace-pre-wrap break-words">{{ message()?.details }}</pre>
-                  }
-                }
-              </div>
-              <button (click)="message.set(null); showErrorDetails.set(false);" class="ml-4 -mt-2 -mr-2 text-gray-500 hover:text-gray-700">&times;</button>
-            </div>
-          </div>
-        </div>
-      }
+      <app-toast-message
+        [message]="message()"
+        (close)="message.set(null)"
+      />
 
       <!-- Debt Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -197,26 +173,14 @@ import { marked } from 'marked';
       }
 
       <!-- Delete Confirmation Modal -->
-      @if (deleteConfirmDebt()) {
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in" (click)="deleteConfirmDebt.set(null)">
-          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in" (click)="$event.stopPropagation()">
-            <div class="p-6">
-              <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Excluir dívida?</h3>
-              <p class="text-gray-600 text-center mb-6">Tem certeza que deseja excluir a dívida do cartão <span class="font-semibold">{{ deleteConfirmDebt()!.local }}</span>? Esta ação não pode ser desfeita.</p>
-              <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p class="text-sm text-red-800 font-medium">Valor atual: {{ deleteConfirmDebt()!.current_value | currency:'BRL' }}</p>
-              </div>
-            </div>
-            <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-2xl">
-              <button (click)="deleteConfirmDebt.set(null)" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
-              <button (click)="confirmDeleteDebt()" class="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">Sim, excluir</button>
-            </div>
-          </div>
-        </div>
-      }
+      <app-delete-confirmation-modal
+        [isOpen]="!!deleteConfirmDebt()"
+        [title]="'Excluir dívida?'"
+        [message]="deleteConfirmDebt() ? 'Tem certeza que deseja excluir a dívida do cartão ' + deleteConfirmDebt()!.local + '? Esta ação não pode ser desfeita.' : ''"
+        [additionalInfo]="deleteConfirmDebt() ? 'Valor atual: ' + (deleteConfirmDebt()!.current_value | currency:'BRL') : ''"
+        (confirmed)="confirmDeleteDebt()"
+        (cancelled)="deleteConfirmDebt.set(null)"
+      />
 
       <!-- Footer Summary -->
       @if (filteredAndSortedDebts().length > 0) {

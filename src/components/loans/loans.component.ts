@@ -5,11 +5,14 @@ import { Loan } from '../../models/debt.model';
 import { LoanDetailComponent } from '../loan-detail/loan-detail.component';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { GeminiService } from '../../services/gemini.service';
+import { DeleteConfirmationModalComponent } from '../delete-confirmation-modal/delete-confirmation-modal.component';
+import { ToastMessageComponent, ToastMessage } from '../toast-message/toast-message.component';
+import { EmptyStateComponent } from '../empty-state/empty-state.component';
 
 @Component({
   selector: 'app-loans',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, LoanDetailComponent, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, CurrencyPipe, LoanDetailComponent, ReactiveFormsModule, FormsModule, DeleteConfirmationModalComponent, ToastMessageComponent, EmptyStateComponent],
   template: `
     <div>
       <div class="space-y-6">
@@ -120,17 +123,13 @@ import { GeminiService } from '../../services/gemini.service';
               </div>
             </div>
           } @empty {
-            <div class="col-span-full text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
-              <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="m12 8-4 4 4 4"/><path d="M8 12h13a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-1"/></svg>
-              </div>
-              <h4 class="text-xl font-bold text-gray-900 mb-2">Nenhum empréstimo cadastrado</h4>
-              <p class="text-gray-500 mb-6">Comece adicionando seu primeiro empréstimo</p>
-              <button (click)="openForm()" class="inline-flex items-center gap-2 bg-slate-800 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-slate-700 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                Adicionar primeiro empréstimo
-              </button>
-            </div>
+            <app-empty-state
+              [title]="'Nenhum empréstimo cadastrado'"
+              [description]="'Comece adicionando seu primeiro empréstimo'"
+              [buttonText]="'Adicionar primeiro empréstimo'"
+              (action)="openForm()">
+              <svg icon xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="m12 8-4 4 4 4"/><path d="M8 12h13a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-1"/></svg>
+            </app-empty-state>
           }
         </div>
 
@@ -170,9 +169,11 @@ import { GeminiService } from '../../services/gemini.service';
                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
                <p class="ml-4 text-gray-700 font-semibold">{{ loadingStep() }}</p>
              </div>
-             <button (click)="cancelUpload()" class="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-             </button>
+             @if (iaLoading()) {
+               <button (click)="cancelUpload()" class="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+               </button>
+             }
            </div>
            @if(iaThought()) {
              <div class="mt-4 bg-gray-50 p-3 rounded-lg text-xs max-h-48 overflow-hidden">
@@ -192,58 +193,20 @@ import { GeminiService } from '../../services/gemini.service';
      }
 
      <!-- Message Box -->
-     @if (message()) {
-       <div class="fixed bottom-8 right-8 z-50 max-w-sm" style="margin: 0 !important;">
-         <div
-           [ngClass]="{
-             'bg-red-100 border-red-500 text-red-700': message()?.type === 'error',
-             'bg-green-100 border-green-500 text-green-700': message()?.type === 'success'
-           }"
-           class="border-l-4 p-4 rounded-lg shadow-lg"
-           role="alert">
-           <div class="flex">
-             <div class="py-1">
-               <svg [ngClass]="{'text-red-500': message()?.type === 'error', 'text-green-500': message()?.type === 'success'}" class="h-6 w-6 mr-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-             </div>
-             <div class="flex-grow">
-               <p class="font-bold">{{ message()?.type === 'error' ? 'Erro' : 'Sucesso' }}</p>
-               <p class="text-sm">{{ message()?.text }}</p>
-               @if (message()?.details) {
-                 <button (click)="showErrorDetails.set(!showErrorDetails())" class="text-xs text-gray-600 hover:underline mt-2">
-                   {{ showErrorDetails() ? 'Ocultar' : 'Ver' }} detalhes
-                 </button>
-                 @if (showErrorDetails()) {
-                   <pre class="mt-2 text-xs bg-gray-100 p-2 rounded overflow-x-auto whitespace-pre-wrap break-words">{{ message()?.details }}</pre>
-                 }
-               }
-             </div>
-             <button (click)="message.set(null); showErrorDetails.set(false);" class="ml-4 -mt-2 -mr-2 text-gray-500 hover:text-gray-700">&times;</button>
-           </div>
-         </div>
-       </div>
-     }
+     <app-toast-message
+       [message]="message()"
+       (close)="message.set(null)"
+     />
 
      <!-- Delete Confirmation Modal -->
-     @if (deleteConfirmLoan()) {
-       <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in" style="margin: 0 !important;" (click)="deleteConfirmLoan.set(null)">
-         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in" (click)="$event.stopPropagation()">
-           <div class="p-6">
-             <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-             </div>
-             <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Excluir empréstimo?</h3>
-             <p class="text-gray-600 text-center mb-6">Tem certeza que deseja excluir o empréstimo do <span class="font-semibold">{{ deleteConfirmLoan()!.creditor }}</span>? Esta ação não pode ser desfeita.</p>
-             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-               <p class="text-sm text-red-800 font-medium">Valor restante: {{ deleteConfirmLoan()!.remaining_value | currency:'BRL' }}</p>
-             </div>
-           </div>
-           <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-2xl">
-             <button (click)="deleteConfirmLoan.set(null)" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
-             <button (click)="confirmDeleteLoan()" class="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">Sim, excluir</button>
-           </div>
-         </div>
-       </div>
-     }
+     <app-delete-confirmation-modal
+       [isOpen]="!!deleteConfirmLoan()"
+       [title]="'Excluir empréstimo?'"
+       [message]="deleteConfirmLoan() ? 'Tem certeza que deseja excluir o empréstimo do ' + deleteConfirmLoan()!.creditor + '? Esta ação não pode ser desfeita.' : ''"
+       [additionalInfo]="deleteConfirmLoan() ? 'Valor restante: ' + (deleteConfirmLoan()!.remaining_value | currency:'BRL') : ''"
+       (confirmed)="confirmDeleteLoan()"
+       (cancelled)="deleteConfirmLoan.set(null)"
+     />
       </div>
     </div>
   `,
@@ -260,14 +223,14 @@ export class LoansComponent {
   isEditMode = this.dataService.isLoanEditMode;
   extractedPdfData = signal<any>(null);
   uploadedPdfFile = signal<File | null>(null);
-  pdfDataForDetail = signal<{installments: any[], pdfFile: File | null} | null>(null);
+  pdfDataForDetail = signal<{ installments: any[], pdfFile: File | null } | null>(null);
   isLoading = signal(false);
   loadingStep = signal<string>('Enviando PDF...');
-  message = signal<{type: 'success' | 'error', text: string, details?: string} | null>(null);
+  message = signal<{ type: 'success' | 'error', text: string, details?: string } | null>(null);
   showErrorDetails = signal(false);
   private messageTimeout?: number;
 
-  private showMessage(msg: {type: 'success' | 'error', text: string, details?: string}) {
+  private showMessage(msg: { type: 'success' | 'error', text: string, details?: string }) {
     this.message.set(msg);
     if (this.messageTimeout) clearTimeout(this.messageTimeout);
     this.messageTimeout = window.setTimeout(() => {
@@ -275,6 +238,7 @@ export class LoansComponent {
       this.showErrorDetails.set(false);
     }, 5000);
   }
+  iaLoading = signal(false);
   iaThought = signal<string | null>(null);
   isIaThinkingExpanded = signal(false);
   deleteConfirmLoan = signal<Loan | null>(null);
@@ -285,17 +249,17 @@ export class LoansComponent {
 
   filteredAndSortedLoans = computed(() => {
     let loans = this.loans();
-    
+
     // Filter by search
     if (this.searchTerm()) {
       loans = loans.filter(l => l.creditor.toLowerCase().includes(this.searchTerm().toLowerCase()));
     }
-    
+
     // Filter by status
     if (this.filterStatus() !== 'all') {
       loans = loans.filter(l => l.status === this.filterStatus());
     }
-    
+
     // Sort
     return [...loans].sort((a, b) => {
       if (this.sortBy() === 'creditor') return a.creditor.localeCompare(b.creditor);
@@ -311,7 +275,7 @@ export class LoansComponent {
 
   totalRemainingValue = computed(() => this.filteredAndSortedLoans().reduce((acc, loan) => acc + loan.remaining_value, 0));
   totalOriginalValue = computed(() => this.filteredAndSortedLoans().reduce((acc, loan) => acc + loan.loan_value, 0));
-  
+
   constructor() {
     this.loadData();
   }
@@ -351,7 +315,7 @@ export class LoansComponent {
         const fullLoan = await this.dataService.fetchLoanById(loan.id);
         this.selectedLoan.set(fullLoan);
       } catch (error: any) {
-        this.showMessage({type: 'error', text: 'Erro ao carregar empréstimo', details: error.message});
+        this.showMessage({ type: 'error', text: 'Erro ao carregar empréstimo', details: error.message });
       } finally {
         this.isLoading.set(false);
       }
@@ -363,8 +327,6 @@ export class LoansComponent {
     this.isEditMode.set(false);
   }
 
-
-
   async editLoan(loan: Loan, event: MouseEvent) {
     event.stopPropagation();
     if (loan.id) {
@@ -375,14 +337,12 @@ export class LoansComponent {
         this.selectedLoan.set(fullLoan);
         this.isEditMode.set(true);
       } catch (error: any) {
-        this.showMessage({type: 'error', text: 'Erro ao carregar empréstimo', details: error.message});
+        this.showMessage({ type: 'error', text: 'Erro ao carregar empréstimo', details: error.message });
       } finally {
         this.isLoading.set(false);
       }
     }
   }
-
-
 
   deleteLoan(loan: Loan, event: MouseEvent) {
     event.stopPropagation();
@@ -396,33 +356,33 @@ export class LoansComponent {
       this.loadingStep.set('Excluindo empréstimo...');
       try {
         await this.dataService.deleteLoan(loan.id);
-        this.showMessage({type: 'success', text: 'Empréstimo excluído com sucesso!'});
+        this.showMessage({ type: 'success', text: 'Empréstimo excluído com sucesso!' });
         this.deleteConfirmLoan.set(null);
         if (this.selectedLoan()?.id === loan.id) {
           this.selectedLoan.set(null);
         }
       } catch (error: any) {
-        this.showMessage({type: 'error', text: 'Falha ao excluir empréstimo', details: error.message});
+        this.showMessage({ type: 'error', text: 'Falha ao excluir empréstimo', details: error.message });
         this.deleteConfirmLoan.set(null);
       } finally {
         this.isLoading.set(false);
       }
     }
   }
-
+/*
   async handleDeleteFromDetail(loanId: number) {
     this.isLoading.set(true);
     this.loadingStep.set('Excluindo empréstimo...');
     try {
       await this.dataService.deleteLoan(loanId);
-      this.showMessage({type: 'success', text: 'Empréstimo excluído com sucesso!'});
+      this.showMessage({ type: 'success', text: 'Empréstimo excluído com sucesso!' });
       this.closeDetail();
     } catch (error: any) {
-      this.showMessage({type: 'error', text: 'Falha ao excluir empréstimo', details: error.message});
+      this.showMessage({ type: 'error', text: 'Falha ao excluir empréstimo', details: error.message });
     } finally {
       this.isLoading.set(false);
     }
-  }
+  }*/
 
   getStatusClasses(status: 'Ativo' | 'Quitado' | 'Inativo'): string {
     switch (status) {
@@ -439,9 +399,10 @@ export class LoansComponent {
       this.abortController.abort();
       this.abortController = null;
     }
+    this.iaLoading.set(false);
     this.isLoading.set(false);
     this.iaThought.set(null);
-    this.showMessage({type: 'error', text: 'Upload cancelado pelo usuário.'});
+    this.showMessage({ type: 'error', text: 'Importação cancelada pelo usuário.' });
   }
 
   async handlePdfUpload(event: any) {
@@ -451,6 +412,7 @@ export class LoansComponent {
     this.uploadedPdfFile.set(file);
     this.abortController = new AbortController();
     this.isLoading.set(true);
+    this.iaLoading.set(true);
     this.loadingStep.set('Preparando arquivo...');
     this.message.set(null);
     this.iaThought.set('');
@@ -459,7 +421,7 @@ export class LoansComponent {
       let thinkingText = '';
       let fullText = '';
       let finalData = '';
-      
+
       for await (const chunk of this.geminiService.extractLoanDataFromFileStream(file, this.abortController.signal)) {
         if (chunk.type === 'countdown') {
           this.loadingStep.set(`Limite de requisições atingido. Reconectando em ${chunk.content}s...`);
@@ -488,17 +450,17 @@ export class LoansComponent {
       if (extractedData.error) {
         throw new Error(extractedData.error);
       }
-      
+
       if (extractedData) {
-        const existingLoan = extractedData.contract_number 
+        const existingLoan = extractedData.contract_number
           ? this.loans().find(l => l.contract_number === extractedData.contract_number)
           : null;
-        
+
         this.pdfDataForDetail.set({
           installments: extractedData.installments || [],
           pdfFile: this.uploadedPdfFile()
         });
-        
+
         if (existingLoan) {
           this.selectedLoan.set(existingLoan);
           this.isEditMode.set(true);
@@ -523,20 +485,21 @@ export class LoansComponent {
             balance_evolution: []
           } as Loan);
         }
-        this.showMessage({type: 'success', text: 'Dados extraídos do PDF! Revise e confirme.'});
+        this.showMessage({ type: 'success', text: 'Dados extraídos do PDF! Revise e confirme.' });
       } else {
-         this.showMessage({type: 'error', text: 'A IA não conseguiu extrair os dados do PDF.'});
+        this.showMessage({ type: 'error', text: 'A IA não conseguiu extrair os dados do PDF.' });
       }
 
     } catch (e: any) {
       if (e.name === 'AbortError') {
-        console.log('Upload cancelado');
+        console.log('Importação cancelada');
       } else {
         console.error('Erro ao processar o PDF:', e);
-        this.showMessage({type: 'error', text: 'Ocorreu um erro ao processar o arquivo PDF.', details: e.message});
+        this.showMessage({ type: 'error', text: 'Ocorreu um erro ao processar o arquivo PDF.', details: e.message });
       }
     } finally {
       this.isLoading.set(false);
+      this.iaLoading.set(false);
       this.iaThought.set(null);
       this.abortController = null;
       event.target.value = '';

@@ -177,6 +177,13 @@ export class AppComponent {
         this.router.navigate(['/painel']);
       }
     });
+
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user) {
+        this.settingsService.loadSettings();
+      }
+    });
   }
 
   navigate(route: string) {

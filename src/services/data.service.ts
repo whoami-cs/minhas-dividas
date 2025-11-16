@@ -242,6 +242,7 @@ export class DataService {
       return await response.json();
     } catch (error) {
       console.error('Error uploading loan attachment:', error);
+      this.apiError.set(error.message || 'Falha ao fazer upload do anexo');
       return null;
     }
   }
@@ -257,6 +258,7 @@ export class DataService {
       return await response.json();
     } catch (error) {
       console.error('Error fetching loan attachments:', error);
+      this.apiError.set(error.message || 'Falha ao buscar anexos');
       return [];
     }
   }
@@ -274,6 +276,7 @@ export class DataService {
       return true;
     } catch (error) {
       console.error('Error deleting loan attachment:', error);
+      this.apiError.set(error.message || 'Falha ao excluir anexo');
       return false;
     }
   }
@@ -300,6 +303,7 @@ export class DataService {
       return await response.json();
     } catch (error) {
       console.error('Error uploading debt attachment:', error);
+      this.apiError.set(error.message || 'Falha ao fazer upload do anexo');
       return null;
     }
   }
@@ -332,6 +336,7 @@ export class DataService {
       return true;
     } catch (error) {
       console.error('Error deleting debt attachment:', error);
+      this.apiError.set(error.message || 'Falha ao excluir anexo');
       return false;
     }
   }
@@ -343,6 +348,7 @@ export class DataService {
       return data || [];
     } catch (error) {
       console.error('Error fetching negotiation offers:', error);
+      this.apiError.set(error.message || 'Falha ao buscar ofertas de negociação');
       return [];
     }
   }
@@ -357,6 +363,7 @@ export class DataService {
       return await response.json();
     } catch (error) {
       console.error('Error adding negotiation offer:', error);
+      this.apiError.set(error.message || 'Falha ao adicionar oferta de negociação');
       return null;
     }
   }
@@ -371,6 +378,7 @@ export class DataService {
       return await response.json();
     } catch (error) {
       console.error('Error updating negotiation offer:', error);
+      this.apiError.set(error.message || 'Falha ao atualizar oferta de negociação');
       return null;
     }
   }
@@ -381,6 +389,7 @@ export class DataService {
       return true;
     } catch (error) {
       console.error('Error deleting negotiation offer:', error);
+      this.apiError.set(error.message || 'Falha ao excluir oferta de negociação');
       return false;
     }
   }
@@ -396,7 +405,7 @@ export class DataService {
       this.apiError.set(null);
     } catch (error: any) {
       console.error('Error fetching income:', error);
-      this.apiError.set(error.message || 'Falha ao conectar com a API');
+      this.apiError.set(error.message || 'Falha ao buscar rendimentos');
       throw error;
     }
   }
@@ -474,7 +483,7 @@ export class DataService {
       this.apiError.set(null);
     } catch (error: any) {
       console.error('Error fetching savings goals:', error);
-      this.apiError.set(error.message || 'Falha ao conectar com a API');
+      this.apiError.set(error.message || 'Falha ao buscar metas');
       throw error;
     }
   }
@@ -548,6 +557,7 @@ export class DataService {
       return await response.json();
     } catch (error) {
       console.error('Error simulating goal:', error);
+      this.apiError.set(error.message || 'Falha ao simular meta');
       throw error;
     }
   }
@@ -562,6 +572,7 @@ export class DataService {
       return await response.json();
     } catch (error) {
       console.error('Error simulating amortization:', error);
+      this.apiError.set(error.message || 'Falha ao simular amortização');
       throw error;
     }
   }

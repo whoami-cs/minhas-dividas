@@ -3,12 +3,15 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { AiChatComponent } from '../ai-chat/ai-chat.component';
+import { DeleteConfirmationModalComponent } from '../delete-confirmation-modal/delete-confirmation-modal.component';
+import { ToastMessageComponent } from '../toast-message/toast-message.component';
+import { EmptyStateComponent } from '../empty-state/empty-state.component';
 import { SavingsGoal, GoalSimulation, AmortizationSimulation } from '../../models/debt.model';
 
 @Component({
   selector: 'app-savings-goals',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, AiChatComponent],
+  imports: [CommonModule, FormsModule, CurrencyPipe, AiChatComponent, DeleteConfirmationModalComponent, ToastMessageComponent, EmptyStateComponent],
   template: `
     <!-- Goal Simulator Modal -->
     @if (isGoalSimulatorVisible()) {
@@ -159,41 +162,16 @@ import { SavingsGoal, GoalSimulation, AmortizationSimulation } from '../../model
     }
 
     <!-- Delete Confirmation Modal -->
-    @if (deleteConfirmGoal()) {
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in" (click)="deleteConfirmGoal.set(null)">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in" (click)="$event.stopPropagation()">
-          <div class="p-6">
-            <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Excluir meta?</h3>
-            <p class="text-gray-600 text-center mb-6">Tem certeza que deseja excluir a meta <span class="font-semibold">{{ deleteConfirmGoal()!.goal_name }}</span>? Esta ação não pode ser desfeita.</p>
-          </div>
-          <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-2xl">
-            <button (click)="deleteConfirmGoal.set(null)" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
-            <button (click)="confirmDeleteGoal()" class="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">Sim, excluir</button>
-          </div>
-        </div>
-      </div>
-    }
+    <app-delete-confirmation-modal
+      [isOpen]="!!deleteConfirmGoal()"
+      [title]="'Excluir meta?'"
+      [message]="deleteConfirmGoal() ? 'Tem certeza que deseja excluir a meta ' + deleteConfirmGoal()!.goal_name + '? Esta ação não pode ser desfeita.' : ''"
+      (confirmed)="confirmDeleteGoal()"
+      (cancelled)="deleteConfirmGoal.set(null)"
+    />
 
     <!-- Message Box -->
-    @if (message()) {
-      <div class="fixed bottom-8 right-8 z-50 max-w-sm">
-        <div [ngClass]="{'bg-red-100 border-red-500 text-red-700': message()?.type === 'error', 'bg-green-100 border-green-500 text-green-700': message()?.type === 'success'}" class="border-l-4 p-4 rounded-lg shadow-lg" role="alert">
-          <div class="flex">
-            <div class="py-1">
-              <svg [ngClass]="{'text-red-500': message()?.type === 'error', 'text-green-500': message()?.type === 'success'}" class="h-6 w-6 mr-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </div>
-            <div class="flex-grow">
-              <p class="font-bold">{{ message()?.type === 'error' ? 'Erro' : 'Sucesso' }}</p>
-              <p class="text-sm">{{ message()?.text }}</p>
-            </div>
-            <button (click)="message.set(null)" class="ml-4 -mt-2 -mr-2 text-gray-500 hover:text-gray-700">&times;</button>
-          </div>
-        </div>
-      </div>
-    }
+    <app-toast-message [message]="message()" (close)="message.set(null)" />
 
     <div class="space-y-6">
       <!-- Header -->
@@ -280,13 +258,12 @@ import { SavingsGoal, GoalSimulation, AmortizationSimulation } from '../../model
       }
 
       @if (activeGoals().length === 0) {
-        <div class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
-          <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-          <h4 class="text-xl font-bold text-gray-900 mb-2">Nenhuma meta criada</h4>
-          <p class="text-gray-500 mb-6">Use os simuladores acima para criar sua primeira meta</p>
-        </div>
+        <app-empty-state
+          [title]="'Nenhuma meta criada'"
+          [description]="'Use os simuladores acima para criar sua primeira meta'"
+          [showButton]="false">
+          <svg icon xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </app-empty-state>
       }
 
       <!-- AI Insights -->
