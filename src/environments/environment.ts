@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+  apiUrl: (typeof process !== 'undefined' && process.env?.['VITE_API_URL']) || 'http://localhost:3001/api'
 };
