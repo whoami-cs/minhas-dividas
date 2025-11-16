@@ -71,11 +71,11 @@ Clique em **"Environment Variables"** e adicione:
 
 ```
 VITE_API_URL=https://minhasdividas-api.onrender.com/api
-VITE_SUPABASE_URL=sua_url_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_supabase
 ```
 
 ⚠️ **IMPORTANTE**: Use a URL do Render do Passo 1.3
+
+💡 **NOTA**: Supabase é acessado apenas pelo backend, não precisa configurar no frontend
 
 ### 2.3 - Deploy
 - Clique em **"Deploy"**
