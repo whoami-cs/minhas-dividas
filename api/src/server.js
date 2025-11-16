@@ -6,6 +6,7 @@ const path = require('path');
 const { runMigrations } = require('./config/migrationRunner');
 const supabase = require('./config/supabase');
 
+const healthRoutes = require('./routes/health');
 const debtsRoutes = require('./routes/debts');
 const loansRoutes = require('./routes/loans');
 const loanAttachmentsRoutes = require('./routes/loanAttachments');
@@ -29,10 +30,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'API Minhas Dívidas' });
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
+app.use('/api/health', healthRoutes);
 app.use('/api/debts', debtsRoutes);
 app.use('/api/loans', loansRoutes);
 app.use('/api/loan-attachments', loanAttachmentsRoutes);

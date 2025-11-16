@@ -1,6 +1,7 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -74,7 +75,24 @@ import { AuthService } from '../../services/auth.service';
             </button>
           </div>
 
-          @if (resetMode()) {
+          @if (updatePasswordMode()) {
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+              <p class="text-sm text-gray-700 mb-3 font-medium">Digite sua nova senha:</p>
+              <input 
+                type="password" 
+                [(ngModel)]="newPassword" 
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3"
+                placeholder="Nova senha"
+              />
+              <button 
+                (click)="handleUpdatePassword()"
+                [disabled]="loading()"
+                class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+              >
+                {{ loading() ? 'Atualizando...' : 'Atualizar senha' }}
+              </button>
+            </div>
+          } @else if (resetMode()) {
             <div class="mt-4 p-4 bg-gray-50 rounded-lg">
               <p class="text-sm text-gray-700 mb-3">Digite seu email para recuperar a senha:</p>
               <input 
@@ -85,9 +103,10 @@ import { AuthService } from '../../services/auth.service';
               />
               <button 
                 (click)="handleResetPassword()"
-                class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm hover:bg-gray-700"
+                [disabled]="loading()"
+                class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm hover:bg-gray-700 disabled:opacity-50"
               >
-                Enviar link de recuperação
+                {{ loading() ? 'Enviando...' : 'Enviar link de recuperação' }}
               </button>
             </div>
           }
@@ -98,14 +117,29 @@ import { AuthService } from '../../services/auth.service';
 })
 export class AuthComponent {
   private authService = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   email = '';
   password = '';
+  newPassword = '';
   resetEmail = '';
   resetMode = signal(false);
+  updatePasswordMode = signal(false);
   loading = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
+
+  constructor() {
+    effect(() => {
+      // Verifica se há token de recuperação na URL
+      this.route.fragment.subscribe(fragment => {
+        if (fragment && fragment.includes('type=recovery')) {
+          this.updatePasswordMode.set(true);
+        }
+      });
+    });
+  }
 
   showResetPassword() {
     this.resetMode.update(v => !v);
@@ -142,4 +176,44 @@ export class AuthComponent {
 
     this.loading.set(false);
   }
+
+  async handleUpdatePassword() {
+    if (!this.newPassword || this.newPassword.length < 6) {
+      this.errorMessage.set('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    this.loading.set(true);
+    this.errorMessage.set('');
+
+    try {
+      // Extrai o token da URL
+      const fragment = window.location.hash.substring(1);
+      const params = new URLSearchParams(fragment);
+      const accessToken = params.get('access_token');
+
+      if (!accessToken) {
+        throw new Error('Token de recuperação inválido ou expirado');
+      }
+
+      const { error } = await this.authService.updatePassword(this.newPassword, accessToken);
+      
+      if (error) {
+        throw new Error(error.message || 'Erro ao atualizar senha');
+      }
+
+      this.successMessage.set('Senha atualizada com sucesso!');
+      setTimeout(() => {
+        this.updatePasswordMode.set(false);
+        window.location.hash = '';
+        this.router.navigate(['/painel']);
+      }, 2000);
+    } catch (error: any) {
+      this.errorMessage.set(error.message || 'Erro ao atualizar senha');
+    } finally {
+      this.loading.set(false);
+    }
+  }
 }
+
+

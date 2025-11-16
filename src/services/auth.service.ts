@@ -89,4 +89,22 @@ export class AuthService {
       return { data: null, error };
     }
   }
+
+  async updatePassword(newPassword: string, accessToken: string) {
+    try {
+      const response = await fetch(`${environment.apiUrl}/auth/update-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ password: newPassword })
+      });
+
+      const data = await response.json();
+      return { data, error: response.ok ? null : data };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
 }

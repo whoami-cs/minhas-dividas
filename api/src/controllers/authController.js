@@ -123,3 +123,39 @@ exports.refreshToken = async (req, res) => {
     });
   }
 };
+
+exports.updatePassword = async (req, res) => {
+  const { password } = req.body;
+  const authHeader = req.headers.authorization;
+
+  if (!password) {
+    return res.status(400).json({ error: 'Senha é obrigatória' });
+  }
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token não fornecido' });
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    const response = await axios.put(
+      `${process.env.SUPABASE_URL}/auth/v1/user`,
+      { password },
+      {
+        headers: {
+          'apikey': process.env.SUPABASE_KEY,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    res.json({ message: 'Senha atualizada com sucesso' });
+  } catch (error) {
+    console.error('Update password error:', error);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || error.message
+    });
+  }
+};
