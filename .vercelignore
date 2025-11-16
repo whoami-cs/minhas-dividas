@@ -1,0 +1,7 @@
+api/
+migrations/
+*.sql
+backup*.js
+backup*.cjs
+node_modules/
+.git/
