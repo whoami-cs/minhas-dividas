@@ -131,14 +131,18 @@ export class AuthComponent {
   successMessage = signal('');
 
   constructor() {
-    effect(() => {
-      // Verifica se há token de recuperação na URL
-      this.route.fragment.subscribe(fragment => {
-        if (fragment && fragment.includes('type=recovery')) {
-          this.updatePasswordMode.set(true);
-        }
-      });
+    // Verifica se há token de recuperação na URL
+    this.route.fragment.subscribe(fragment => {
+      if (fragment && fragment.includes('type=recovery')) {
+        this.updatePasswordMode.set(true);
+      }
     });
+    
+    // Também verifica no hash diretamente
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=recovery')) {
+      this.updatePasswordMode.set(true);
+    }
   }
 
   showResetPassword() {

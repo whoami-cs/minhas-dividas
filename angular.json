@@ -20,7 +20,10 @@
             "tsConfig": "tsconfig.json",
             "assets": [
               "favicon.svg"
-            ]
+            ],
+            "define": {
+              "API_URL": "process.env.API_URL"
+            }
           },
           "configurations": {
             "production": {

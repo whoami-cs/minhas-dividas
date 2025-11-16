@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://minhasdividas-api.onrender.com/api'
+  apiUrl: process.env.API_URL
 };
