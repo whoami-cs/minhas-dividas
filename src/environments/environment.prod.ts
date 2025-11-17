@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: (window as any).__env?.VITE_API_URL
+  apiUrl: 'https://api.saldopositivo.shop/api',
+  supabaseUrl: 'YOUR_SUPABASE_URL',
+  supabaseKey: 'YOUR_SUPABASE_ANON_KEY'
 };

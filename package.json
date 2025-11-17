@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "ng serve",
-    "build": "ng build && node replace-env.js",
+    "build": "ng build",
     "preview": "ng serve --configuration=production"
   },
   "dependencies": {

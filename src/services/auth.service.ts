@@ -26,6 +26,23 @@ export class AuthService {
     this.loading.set(false);
   }
 
+  async signUp(email: string, password: string, firstName: string, lastName?: string) {
+    try {
+      const response = await fetch(`${environment.apiUrl}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password, firstName, lastName })
+      });
+
+      const data = await response.json();
+      return { data, error: response.ok ? null : data };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
   async signIn(email: string, password: string) {
     try {
       const response = await fetch(`${environment.apiUrl}/auth/signin`, {

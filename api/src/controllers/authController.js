@@ -1,5 +1,6 @@
 const axios = require('axios');
-const supabase = require('../config/supabase');
+const { supabase } = require('../config/supabase');
+const emailService = require('../services/emailService');
 
 exports.signIn = async (req, res) => {
   const { email, password } = req.body;
@@ -50,6 +51,47 @@ exports.signOut = async (req, res) => {
   }
 };
 
+exports.signUp = async (req, res) => {
+  const { email, password, firstName, lastName } = req.body;
+
+  if (!email || !password || !firstName) {
+    return res.status(400).json({ error: 'Email, senha e nome são obrigatórios' });
+  }
+
+  try {
+    // Criar usuário no Supabase
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      user_metadata: {
+        firstName,
+        lastName
+      },
+      email_confirm: false // Vamos confirmar via nosso sistema
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Enviar email de boas-vindas
+    try {
+      await emailService.sendWelcomeEmail(email, firstName);
+    } catch (emailError) {
+      console.error('Erro ao enviar email de boas-vindas:', emailError);
+      // Não falha o cadastro se o email não for enviado
+    }
+
+    res.status(201).json({ 
+      message: 'Usuário criado com sucesso',
+      user: data.user
+    });
+  } catch (error) {
+    console.error('Erro no cadastro:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
 exports.resetPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -58,22 +100,16 @@ exports.resetPassword = async (req, res) => {
   }
 
   try {
+    // Usar nosso sistema de email personalizado
     const response = await axios.post(
-      `${process.env.SUPABASE_URL}/auth/v1/recover`,
-      { email },
-      {
-        headers: {
-          'apikey': process.env.SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        }
-      }
+      `${req.protocol}://${req.get('host')}/api/email/password-reset`,
+      { email }
     );
 
-    res.json(response.data);
+    res.json({ message: 'Se o email existir, um link de redefinição será enviado' });
   } catch (error) {
-    res.status(error.response?.status || 500).json({
-      error: error.response?.data || error.message
-    });
+    console.error('Erro ao solicitar redefinição:', error);
+    res.json({ message: 'Se o email existir, um link de redefinição será enviado' });
   }
 };
 

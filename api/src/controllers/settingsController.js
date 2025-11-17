@@ -1,4 +1,4 @@
-const supabase = require('../config/supabase');
+const { supabase } = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
 
 exports.getSettings = async (req, res) => {

@@ -24,8 +24,12 @@ import { SettingsService } from './services/settings.service';
       </div>
     } @else if (dataService.apiOffline()) {
       <app-api-error></app-api-error>
-    } @else if (!authService.currentUser()) {
+    } @else if (!authService.currentUser() && !isPublicRoute()) {
       <app-auth></app-auth>
+    } @else if (!authService.currentUser() && isPublicRoute()) {
+      <div class="min-h-screen bg-gray-50">
+        <router-outlet></router-outlet>
+      </div>
     } @else {
       <div class="min-h-screen bg-gray-50">
         <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
@@ -171,9 +175,15 @@ export class AppComponent {
     effect(() => {
       const user = this.authService.currentUser();
       const loading = this.authService.loading();
-      if (!user && !loading) {
+      const currentRoute = this.currentRoute();
+      
+      // Rotas que não precisam de autenticação
+      const publicRoutes = ['/login', '/redefinir-senha'];
+      const isPublicRoute = publicRoutes.some(route => currentRoute.startsWith(route));
+      
+      if (!user && !loading && !isPublicRoute) {
         this.router.navigate(['/login']);
-      } else if (user && this.currentRoute() === '/login') {
+      } else if (user && currentRoute === '/login') {
         this.router.navigate(['/painel']);
       }
     });
@@ -191,10 +201,19 @@ export class AppComponent {
     this.router.navigate([route]);
   }
 
-  private showSettingsMessage(msg: {type: 'success' | 'error', text: string}) {
+  isPublicRoute(): boolean {
+    const publicRoutes = ['/login', '/redefinir-senha'];
+    return publicRoutes.some(route => this.currentRoute().startsWith(route));
+  }
+
+  showMessage(msg: {type: 'success' | 'error', text: string}) {
     this.settingsMessage.set(msg);
     if (this.messageTimeout) clearTimeout(this.messageTimeout);
     this.messageTimeout = window.setTimeout(() => this.settingsMessage.set(null), 5000);
+  }
+
+  private showSettingsMessage(msg: {type: 'success' | 'error', text: string}) {
+    this.showMessage(msg);
   }
 
   async handleSignOut() {

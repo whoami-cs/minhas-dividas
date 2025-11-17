@@ -1,4 +1,4 @@
-const supabase = require('../config/supabase');
+const { supabase } = require('../config/supabase');
 const loanAttachmentsController = require('./loanAttachmentsController');
 
 exports.getAllLoans = async (req, res) => {

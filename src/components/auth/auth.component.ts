@@ -1,13 +1,14 @@
 import { Component, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { EmailService } from '../../services/email.service';
 
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
       <div class="max-w-md w-full">
@@ -117,6 +118,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class AuthComponent {
   private authService = inject(AuthService);
+  private emailService = inject(EmailService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -169,17 +171,19 @@ export class AuthComponent {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    const { error } = await this.authService.resetPassword(this.resetEmail);
+    const { error } = await this.emailService.sendPasswordReset(this.resetEmail);
     
     if (error) {
-      this.errorMessage.set(error.message);
+      this.errorMessage.set(error.error || 'Erro ao enviar email');
     } else {
-      this.successMessage.set('Link de recuperação enviado para seu email!');
+      this.successMessage.set('Se o email existir, você receberá um link de recuperação!');
       this.resetMode.set(false);
     }
 
     this.loading.set(false);
   }
+
+
 
   async handleUpdatePassword() {
     if (!this.newPassword || this.newPassword.length < 6) {

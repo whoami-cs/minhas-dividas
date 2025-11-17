@@ -1,5 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const supabase = require('../config/supabase');
+const { supabase } = require('../config/supabase');
 
 if (!process.env.GEMINI_API_KEYS) {
   throw new Error('GEMINI_API_KEYS environment variable is required');

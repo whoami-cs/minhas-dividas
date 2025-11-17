@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 
 router.post('/signin', authController.signIn);
+router.post('/signup', authController.signUp);
 router.post('/signout', authController.signOut);
 router.post('/reset-password', authController.resetPassword);
 router.post('/update-password', authController.updatePassword);

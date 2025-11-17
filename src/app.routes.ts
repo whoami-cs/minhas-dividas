@@ -4,14 +4,17 @@ import { CreditCardDebtsComponent } from './components/credit-card-debts/credit-
 import { LoansComponent } from './components/loans/loans.component';
 import { IncomeComponent } from './components/income/income.component';
 import { SavingsGoalsComponent } from './components/savings-goals/savings-goals.component';
+import { AuthComponent } from './components/auth/auth.component';
+import { ResetPasswordComponent } from './components/auth/reset-password.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/painel', pathMatch: 'full' },
-  { path: 'login', children: [] },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: AuthComponent },
+  { path: 'redefinir-senha', component: ResetPasswordComponent },
   { path: 'painel', component: DashboardComponent },
   { path: 'dividas', component: CreditCardDebtsComponent },
   { path: 'emprestimos', component: LoansComponent },
   { path: 'rendimentos', component: IncomeComponent },
   { path: 'metas', component: SavingsGoalsComponent },
-  { path: '**', redirectTo: '/painel' }
+  { path: '**', redirectTo: '/login' }
 ];

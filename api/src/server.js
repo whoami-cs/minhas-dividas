@@ -4,7 +4,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { runMigrations } = require('./config/migrationRunner');
-const supabase = require('./config/supabase');
+const { supabase } = require('./config/supabase');
 
 const healthRoutes = require('./routes/health');
 const debtsRoutes = require('./routes/debts');
@@ -19,6 +19,7 @@ const incomeRoutes = require('./routes/income');
 const paymentPlanRoutes = require('./routes/paymentPlan');
 const aiChatRoutes = require('./routes/aiChat');
 const settingsRoutes = require('./routes/settings');
+const emailRoutes = require('./routes/email');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -43,6 +44,7 @@ app.use('/api/income', incomeRoutes);
 app.use('/api/payment-plans', paymentPlanRoutes);
 app.use('/api/ai-chat', aiChatRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/email', emailRoutes);
 
 async function ensureStorageBucket() {
   try {

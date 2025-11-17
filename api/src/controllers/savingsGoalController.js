@@ -1,4 +1,4 @@
-const supabase = require('../config/supabase');
+const { supabase } = require('../config/supabase');
 const debtsController = require('./debtsController');
 const loansController = require('./loansController');
 
